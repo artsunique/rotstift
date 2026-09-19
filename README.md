@@ -27,7 +27,7 @@ Modell überzeugend.
 ## Schnellstart
 
 ```bash
-git clone https://github.com/<dein-account>/slopwaechter && cd slopwaechter
+git clone https://github.com/artsunique/slopwaechter && cd slopwaechter
 
 # einen Satz prüfen
 python3 tools/deslop_de.py --text "Nicht nur schnell, sondern auch nahtlos."
