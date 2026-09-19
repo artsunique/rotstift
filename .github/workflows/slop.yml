@@ -1,0 +1,28 @@
+name: slopwächter
+
+on:
+  push:
+    paths: ['**.md', '**.html', 'references/katalog.json', 'tools/**']
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Katalog-Regressionstests
+        run: python3 tools/test_deslop_de.py
+
+      - name: Texte linten
+        run: |
+          fehler=0
+          # Pfad anpassen: hier stehen die Texte, die das Gate passieren muessen
+          for datei in $(git ls-files 'texte/*.md' 'texte/*.html' 2>/dev/null); do
+            echo "--- $datei"
+            python3 tools/deslop_de.py "$datei" --keine-farben || fehler=1
+          done
+          exit $fehler

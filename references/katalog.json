@@ -1,0 +1,417 @@
+{
+  "version": "1.0",
+  "sprache": "de",
+  "hinweis": "Jede Regel: id, muster (Python-Regex), hinweis, ersatz. Optional: gewicht (Default 1.0, Tier-2-Woerter 0.5) und case (true = Gross-/Kleinschreibung beachten). Neue Regeln ergaenzen und tools/test_deslop_de.py laufen lassen.",
+  "gruppen": {
+    "vokabular": {
+      "titel": "KI-Vokabular",
+      "schwelle": 2,
+      "erklaerung": "Woerter, die Sprachmodelle im Deutschen deutlich haeufiger setzen als Menschen. Tier 1 wird ueber den Wortstamm gematcht, Tier 2 exakt, weil die Woerter eine normale woertliche Bedeutung haben.",
+      "regeln": [
+        {
+          "id": "v-nahtlos",
+          "muster": "\\bnahtlos\\w*",
+          "hinweis": "Klassischer Lehnuebersetzungs-Tell von 'seamless'.",
+          "ersatz": "Konkret sagen, was ineinandergreift."
+        },
+        {
+          "id": "v-ganzheitlich",
+          "muster": "\\bganzheitlich\\w*",
+          "hinweis": "Leerformel, sagt nie, was enthalten ist.",
+          "ersatz": "Die Bestandteile aufzaehlen."
+        },
+        {
+          "id": "v-massgeschneidert",
+          "muster": "\\bma(ss|ß)geschneidert\\w*",
+          "hinweis": "Behauptet Individualitaet, statt sie zu zeigen.",
+          "ersatz": "Ein Beispiel fuer die Anpassung nennen."
+        },
+        {
+          "id": "v-bahnbrechend",
+          "muster": "\\b(bahnbrechend\\w*|revolutionaer\\w*|revolutionär\\w*|revolutionier\\w*)",
+          "hinweis": "Superlativ ohne Beleg, Leser rechnet ihn heraus.",
+          "ersatz": "Den Unterschied zum Vorgaenger benennen."
+        },
+        {
+          "id": "v-zukunftsweisend",
+          "muster": "\\b(zukunftsweisend\\w*|wegweisend\\w*|zukunftssicher\\w*)",
+          "hinweis": "Unpruefbare Zukunftsbehauptung.",
+          "ersatz": "Streichen oder datieren."
+        },
+        {
+          "id": "v-mehrwert",
+          "muster": "\\bMehrwert(e|s)?\\b",
+          "hinweis": "Beratersprech, ersetzt den konkreten Nutzen.",
+          "ersatz": "Den Nutzen benennen: was wird schneller, billiger, sicherer."
+        },
+        {
+          "id": "v-synergie",
+          "muster": "\\bSynergie\\w*",
+          "hinweis": "Reines Fuellwort.",
+          "ersatz": "Streichen."
+        },
+        {
+          "id": "v-potenzial",
+          "muster": "\\bPotenzial\\w*\\s+(entfalt\\w+|freisetz\\w+|aussch(oe|ö)pf\\w+|heb\\w+)",
+          "hinweis": "Uebersetztes 'unlock your potential'.",
+          "ersatz": "Das Ergebnis nennen, nicht die Moeglichkeit."
+        },
+        {
+          "id": "v-eintauchen",
+          "muster": "\\b(eintauchen|Tauchen (Sie|wir) ein|tiefer eintauchen)\\b",
+          "hinweis": "'let's dive in' auf Deutsch.",
+          "ersatz": "Direkt anfangen."
+        },
+        {
+          "id": "v-naechstes-level",
+          "muster": "\\bauf (das|ein) (n(ae|ä)chste|neue)s? Level\\b",
+          "hinweis": "Abgenutzte Marketingfloskel.",
+          "ersatz": "Den konkreten Sprung beschreiben."
+        },
+        {
+          "id": "v-gamechanger",
+          "muster": "\\b(Gamechanger|Game[- ]Changer|Must[- ]?have|State of the Art)\\b",
+          "hinweis": "Anglizismus-Floskel ohne Inhalt.",
+          "ersatz": "Streichen."
+        },
+        {
+          "id": "v-reise",
+          "muster": "\\b(Ihre[rnm]?|Deine[rnm]?|unsere[rnm]?)\\s+(digitale[rnm]?\\s+|gemeinsame[rnm]?\\s+|pers(oe|ö)nliche[rnm]?\\s+)?Reise\\b",
+          "hinweis": "'journey' als Metapher, im Deutschen besonders auffaellig.",
+          "ersatz": "Projekt, Umstellung, Zusammenarbeit."
+        },
+        {
+          "id": "v-transformieren",
+          "muster": "\\btransformier\\w+",
+          "hinweis": "Buzzword-Verb.",
+          "ersatz": "aendern, umbauen, ersetzen."
+        },
+        {
+          "id": "v-leuchtturm",
+          "muster": "\\b(Leuchtturmprojekt|Erfolgsgeschichte|Rundum[- ]sorglos)\\w*",
+          "hinweis": "Vertriebsvokabular.",
+          "ersatz": "Streichen oder durch Fakt ersetzen."
+        },
+        {
+          "id": "v-t2-innovativ",
+          "muster": "\\binnovativ(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: als Selbstzuschreibung wertlos, als Fachbegriff legitim.",
+          "ersatz": "Zeigen, was neu ist.",
+          "gewicht": 0.5
+        },
+        {
+          "id": "v-t2-effizient",
+          "muster": "\\beffizient(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: in technischen Texten legitim, in Werbetexten leer.",
+          "ersatz": "Zahl statt Adjektiv.",
+          "gewicht": 0.5
+        },
+        {
+          "id": "v-t2-umfassend",
+          "muster": "\\bumfassend(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: meist Fuellwort vor einem Substantiv.",
+          "ersatz": "Streichen.",
+          "gewicht": 0.5
+        },
+        {
+          "id": "v-t2-vielfaeltig",
+          "muster": "\\b(vielf(ae|ä)ltig(e|er|es|en|em)?|facettenreich\\w*)\\b",
+          "hinweis": "Tier 2: ersetzt die Aufzaehlung, die der Leser braucht.",
+          "ersatz": "Aufzaehlen.",
+          "gewicht": 0.5
+        },
+        {
+          "id": "v-t2-massgeblich",
+          "muster": "\\b(ma(ss|ß)geblich|entscheidend|essenziell|unverzichtbar)(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: Bedeutungs-Inflation.",
+          "ersatz": "Wenn es stimmt, belegen. Sonst streichen.",
+          "gewicht": 0.5
+        },
+        {
+          "id": "v-t2-dynamisch",
+          "muster": "\\bdynamisch(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: in der Technik echt, im Marketing leer.",
+          "ersatz": "Streichen.",
+          "gewicht": 0.5
+        }
+      ]
+    },
+    "konstruktionen": {
+      "titel": "KI-Satzschablonen",
+      "schwelle": 1,
+      "erklaerung": "Satzformen, die Modelle reproduzieren. Eine einzige reicht, damit ein Text maschinell klingt.",
+      "regeln": [
+        {
+          "id": "k-nicht-nur",
+          "muster": "nicht nur[^.!?]{2,80}?,?\\s+sondern auch",
+          "hinweis": "Der lauteste Tell ueberhaupt, direkte Uebernahme von 'not just X, but Y'.",
+          "ersatz": "Zwei Saetze. Oder nur die zweite Haelfte."
+        },
+        {
+          "id": "k-ins-spiel",
+          "muster": "(genau )?hier kommt\\b[^.!?]{0,60}\\bins Spiel",
+          "hinweis": "'That's where X comes in'.",
+          "ersatz": "Das Produkt einfach nennen."
+        },
+        {
+          "id": "k-heutige-zeit",
+          "muster": "In der (heutigen|schnelllebigen|digitalen)\\s+(schnelllebigen\\s+)?(Zeit|Welt|Gesch(ae|ä)ftswelt|Arbeitswelt)",
+          "hinweis": "Der haeufigste KI-Einstieg im Deutschen.",
+          "ersatz": "Mit dem ersten echten Satz beginnen."
+        },
+        {
+          "id": "k-zeitalter",
+          "muster": "\\bim Zeitalter (der|des|von)\\b",
+          "hinweis": "Pathos-Einstieg ohne Information.",
+          "ersatz": "Streichen."
+        },
+        {
+          "id": "k-wichtig-zu",
+          "muster": "Es ist wichtig,? zu (beachten|betonen|erw(ae|ä)hnen|verstehen)",
+          "hinweis": "Throat-clearing, der Satz danach traegt alles.",
+          "ersatz": "Den Satz danach als ersten Satz nehmen."
+        },
+        {
+          "id": "k-ob-ob",
+          "muster": "\\bOb\\b[^.!?]{3,50},\\s*ob\\b[^.!?]{3,50}[–—-]",
+          "hinweis": "Die 'Ob A, ob B' Dreierkette ist reines Modellmuster.",
+          "ersatz": "Ein Fall, konkret."
+        },
+        {
+          "id": "k-stellen-sie-sich",
+          "muster": "Stellen Sie sich (vor|einmal vor)",
+          "hinweis": "Imaginations-Einstieg, den Menschen selten schreiben.",
+          "ersatz": "Den realen Fall schildern."
+        },
+        {
+          "id": "k-selbstfrage",
+          "muster": "\\?\\s+(Ganz einfach|Die Antwort (lautet|ist)|Weil\\b|Deshalb\\b)",
+          "hinweis": "Selbstbeantwortete rhetorische Frage.",
+          "ersatz": "Die Antwort als Aussagesatz."
+        },
+        {
+          "id": "k-beide-welten",
+          "muster": "das Beste aus (beiden|allen) Welten",
+          "hinweis": "Abgenutzt.",
+          "ersatz": "Beide Vorteile einzeln nennen."
+        },
+        {
+          "id": "k-rolle-spielen",
+          "muster": "spielt\\s+(dabei\\s+)?eine\\s+(wichtige|entscheidende|zentrale|gro(ss|ß)e)\\s+Rolle",
+          "hinweis": "Sagt nur, dass etwas relevant ist, nie wie.",
+          "ersatz": "Die Wirkung beschreiben."
+        },
+        {
+          "id": "k-beleg-fuer",
+          "muster": "ist ein (Beleg|Zeugnis|Beweis) f(ue|ü)r",
+          "hinweis": "'stands as a testament to'.",
+          "ersatz": "Streichen."
+        },
+        {
+          "id": "k-bedeutung-gewinnen",
+          "muster": "gewinnt\\s+(zunehmend\\s+|immer mehr\\s+)?an Bedeutung",
+          "hinweis": "Inhaltsleerer Trendsatz.",
+          "ersatz": "Zahl oder Datum."
+        },
+        {
+          "id": "k-entscheidender-bedeutung",
+          "muster": "von (entscheidender|zentraler|gro(ss|ß)er) Bedeutung",
+          "hinweis": "Nominalisierte Bedeutungs-Inflation.",
+          "ersatz": "wichtig — oder streichen."
+        },
+        {
+          "id": "k-in-diesem-artikel",
+          "muster": "In diesem (Artikel|Beitrag|Text|Leitfaden) (erfahren Sie|zeigen wir|schauen wir)",
+          "hinweis": "Meta-Ankuendigung statt Inhalt.",
+          "ersatz": "Streichen, direkt liefern."
+        },
+        {
+          "id": "k-zusammenfassend",
+          "muster": "(Zusammenfassend l(ae|ä)sst sich sagen|Abschlie(ss|ß)end l(ae|ä)sst sich festhalten|Alles in allem)",
+          "hinweis": "Generischer Positiv-Schluss.",
+          "ersatz": "Mit dem letzten echten Punkt enden."
+        },
+        {
+          "id": "k-blick-kulissen",
+          "muster": "Ein Blick hinter die Kulissen",
+          "hinweis": "Floskel-Headline.",
+          "ersatz": "Was man dort sieht, in die Headline."
+        },
+        {
+          "id": "k-lassen-sie-uns",
+          "muster": "Lassen Sie uns\\s+\\w+",
+          "hinweis": "'Let us' — im Deutschen ungebraeuchlich ausserhalb von KI-Text.",
+          "ersatz": "Direkt formulieren."
+        },
+        {
+          "id": "k-sowohl-als-auch",
+          "muster": "sowohl\\b[^.!?]{2,60}\\bals auch",
+          "hinweis": "Uebernutzt, wirkt bei zweifachem Vorkommen sofort maschinell.",
+          "ersatz": "und."
+        }
+      ]
+    },
+    "deutsch": {
+      "titel": "Deutschspezifische Tells",
+      "schwelle": 3,
+      "erklaerung": "Muster, die es im englischen Original nicht gibt: Amtsdeutsch, Nominalstil, Genitivketten, aufzaehlende Absatzanfaenge.",
+      "regeln": [
+        {
+          "id": "d-amtsdeutsch",
+          "muster": "\\b(hierbei|diesbez(ue|ü)glich|dahingehend|seitens|dergestalt|nichtsdestotrotz|gleichwohl|indes)\\b",
+          "hinweis": "Amtsdeutsch. Modelle greifen darauf zurueck, wenn sie serioes klingen sollen.",
+          "ersatz": "dabei, dazu, von, trotzdem."
+        },
+        {
+          "id": "d-im-rahmen",
+          "muster": "\\b(im Rahmen (der|des|von)|im Zuge (der|des|von)|im Hinblick auf)\\b",
+          "hinweis": "Nominale Leerkonstruktion.",
+          "ersatz": "bei, fuer, zu."
+        },
+        {
+          "id": "d-nominalstil",
+          "muster": "\\b(Durchf(ue|ü)hrung|Umsetzung|Optimierung|Bereitstellung|Erstellung|Gew(ae|ä)hrleistung|Verbesserung|Steigerung|Implementierung|Nutzung|Anwendung|Bearbeitung)\\s+(der|des|von|Ihrer|Ihres)\\b",
+          "hinweis": "Nominalstil: das Verb ist im Substantiv verschwunden.",
+          "ersatz": "Verb zurueckholen: 'Wir setzen X um' statt 'Die Umsetzung von X'."
+        },
+        {
+          "id": "d-genitivkette",
+          "muster": "\\b(der|des)\\s+\\w+(ung|heit|keit|ion|it(ae|ä)t)\\s+(der|des)\\s+\\w+",
+          "hinweis": "Genitivkette. Zwei Genitive hintereinander bremsen jeden Satz aus.",
+          "ersatz": "Aufloesen, notfalls in zwei Saetze."
+        },
+        {
+          "id": "d-jedoch",
+          "muster": "\\b(jedoch|allerdings|nichtsdestoweniger)\\b",
+          "hinweis": "KI-Deutsch weicht dem schlichten 'aber' aus. Siehe auch Gruppe 'stimme'.",
+          "ersatz": "aber."
+        },
+        {
+          "id": "d-absatzstart",
+          "muster": "(?m)^\\s*(Dar(ue|ü)ber hinaus|Des Weiteren|Ferner|Zudem|Au(ss|ß)erdem|Nicht zuletzt|Dar(ue|ü)ber hinausgehend)\\b",
+          "hinweis": "Aufzaehlender Absatzanfang. Drei davon machen aus Text eine Liste in Prosaform.",
+          "ersatz": "Absatz mit seinem eigenen Inhalt beginnen."
+        },
+        {
+          "id": "d-passiv-werden",
+          "muster": "\\bwird\\s+\\w+(iert|t|en)\\s+(werden|k(oe|ö)nnen)\\b",
+          "hinweis": "Gestapeltes Passiv, verdeckt wer handelt.",
+          "ersatz": "Aktiv, mit Subjekt."
+        },
+        {
+          "id": "d-hedging",
+          "muster": "\\b(kann unter Umst(ae|ä)nden|k(oe|ö)nnte m(oe|ö)glicherweise|in der Regel meist|tendenziell eher)\\b",
+          "hinweis": "Gestapelte Abschwaecher.",
+          "ersatz": "Eine Einschraenkung reicht."
+        }
+      ]
+    },
+    "kadenz": {
+      "titel": "Satzzeichen und Rhythmus",
+      "schwelle": 2,
+      "erklaerung": "Formale Auffaelligkeiten, die unabhaengig vom Wortschatz verraten.",
+      "regeln": [
+        {
+          "id": "c-gedankenstrich",
+          "muster": "[^.!?]*[–—][^.!?]*[–—][^.!?]*[.!?]",
+          "hinweis": "Zwei Gedankenstriche in einem Satz. Im Deutschen selten, in KI-Text Standard.",
+          "ersatz": "Komma, Klammer oder Punkt."
+        },
+        {
+          "id": "c-bullet-gedankenstrich",
+          "muster": "(?m)^\\s*[–—]\\s+\\S",
+          "hinweis": "Gedankenstrich als Listenzeichen. Deutsche Listen nutzen den Bindestrich.",
+          "ersatz": "- oder Aufzaehlungszeichen."
+        },
+        {
+          "id": "c-dreiergruppe",
+          "muster": "\\b([a-zäöüß]{3,}),\\s+([a-zäöüß]{3,})\\s+und\\s+([a-zäöüß]{3,})\\b",
+          "hinweis": "Dreiergruppe aus Adjektiven oder Verben. Eine ist Rhetorik, zwei auf einer Seite sind eine Maschine.",
+          "ersatz": "Zwei Elemente, oder vier.",
+          "case": true
+        },
+        {
+          "id": "c-doppelpunkt-reveal",
+          "muster": "(?m)^#{1,6}\\s+[^:\\n]{5,40}:\\s+\\S",
+          "hinweis": "Headline im Muster 'Thema: Versprechen'.",
+          "ersatz": "Eine Aussage ohne Doppelpunkt."
+        },
+        {
+          "id": "c-emoji",
+          "muster": "[\\U0001F300-\\U0001FAFF\\u2728\\u2705\\u274C\\u2B50\\u26A1\\u2714]",
+          "hinweis": "Emoji im Geschaeftstext, meist als Listenzeichen.",
+          "ersatz": "Streichen."
+        },
+        {
+          "id": "c-fettung",
+          "muster": "\\*\\*[^*\\n]{1,40}\\*\\*[^\\n]{0,60}\\*\\*[^*\\n]{1,40}\\*\\*",
+          "hinweis": "Mehrfachfettung in einem Absatz, typisches Chatbot-Layout.",
+          "ersatz": "Hoechstens eine Fettung pro Absatz."
+        }
+      ]
+    },
+    "belege": {
+      "titel": "Erfundene Belege",
+      "schwelle": 1,
+      "erklaerung": "Absichtlich streng. Ein Fehlalarm kostet zehn Sekunden, eine erfundene Zahl kostet die Glaubwuerdigkeit. Mit --belege-ok bestaetigst du, dass die Zahlen belegbar sind; die Fundstellen werden trotzdem ausgegeben.",
+      "regeln": [
+        {
+          "id": "b-kundenzahl",
+          "muster": "\\b(?:(?:ue|ü)ber|mehr als)?\\s*\\d{1,3}(?:[.\\s]\\d{3})*\\+?\\s*(zufriedene\\s+)?(Kunden|Kundinnen|Nutzer|Anwender|Unternehmen|Projekte|Partner|Mitglieder)\\b",
+          "hinweis": "Zahl neben Nomen. Belegbar?",
+          "ersatz": "Beleg verlinken oder '[Zahl fehlt]' schreiben und weiterschreiben."
+        },
+        {
+          "id": "b-erfahrung",
+          "muster": "\\b((ue|ü)ber|mehr als|seit)\\s+\\d{1,3}\\s+Jahren?\\s+(Erfahrung|am Markt|T(ae|ä)tigkeit)",
+          "hinweis": "Erfahrungsjahre. Gegen das Gruendungsdatum pruefbar?",
+          "ersatz": "Gruendungsjahr nennen, das laesst sich nicht bestreiten."
+        },
+        {
+          "id": "b-prozent",
+          "muster": "\\b\\d{1,3}\\s*(%|Prozent)\\s+(mehr|weniger|schneller|g(ue|ü)nstiger|h(oe|ö)her|Steigerung|Ersparnis)",
+          "hinweis": "Wirkungsprozent ohne Quelle.",
+          "ersatz": "Messung und Zeitraum dazu, oder streichen."
+        },
+        {
+          "id": "b-bewertung",
+          "muster": "\\b[1-5][.,]\\d\\s*(von\\s*5|Sterne|\\u2605)",
+          "hinweis": "Bewertungsangabe. Aus einer echten Quelle?",
+          "ersatz": "Plattform und Anzahl der Bewertungen nennen."
+        },
+        {
+          "id": "b-superlativ-markt",
+          "muster": "\\b(f(ue|ü)hrend(e|er|es|en)?|Marktf(ue|ü)hrer|Nummer 1|beliebtest(e|er|es)|meistgenutzt(e|er|es))\\b",
+          "hinweis": "Marktbehauptung. Unbelegt ist sie in DE zudem wettbewerbsrechtlich heikel.",
+          "ersatz": "Beleg oder streichen."
+        }
+      ]
+    },
+    "stimme": {
+      "titel": "Menschliche Signale (Umkehrpruefung)",
+      "schwelle": 1,
+      "erklaerung": "Hier zaehlt nicht, was dasteht, sondern was fehlt. Greift erst ab 120 Woertern.",
+      "metriken": [
+        {
+          "id": "s-kein-aber",
+          "typ": "aber_quote",
+          "hinweis": "Kein einziges 'aber' im Text, aber Ausweichformen wie 'jedoch' oder 'allerdings'. Das staerkste deutsche KI-Signal ueberhaupt.",
+          "ersatz": "Mindestens ein 'aber' da einsetzen, wo der Text wirklich dreht."
+        },
+        {
+          "id": "s-satzlaengen",
+          "typ": "satzlaengen_varianz",
+          "schwelle_vk": 0.38,
+          "hinweis": "Satzlaengen zu gleichfoermig. Menschen schreiben lange Saetze und dann kurze.",
+          "ersatz": "Zwei, drei Saetze radikal kuerzen."
+        },
+        {
+          "id": "s-ich-wir",
+          "typ": "perspektive",
+          "hinweis": "Kein 'ich', 'wir' oder 'uns' im ganzen Text. Keine Perspektive, nur Zusammenfassung.",
+          "ersatz": "Eine eigene Einschaetzung einbauen."
+        }
+      ]
+    }
+  }
+}
