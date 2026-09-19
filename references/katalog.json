@@ -2,6 +2,30 @@
   "version": "1.0",
   "sprache": "de",
   "hinweis": "Jede Regel: id, muster (Python-Regex), hinweis, ersatz. Optional: gewicht (Default 1.0, Tier-2-Woerter 0.5) und case (true = Gross-/Kleinschreibung beachten). Neue Regeln ergaenzen und tools/test_deslop_de.py laufen lassen.",
+  "textsorten": {
+    "standard": {
+      "titel": "Fliesstext: Landingpage, Blogpost, Newsletter, Angebot, Produkttext",
+      "min_woerter_stimme": 120,
+      "aus": [],
+      "notiz": "Der Normalfall. Alle sechs Gruppen greifen unveraendert."
+    },
+    "profil": {
+      "titel": "Ueber-mich-Seite, Unternehmensprofil, Pressetext, Referenz",
+      "min_woerter_stimme": 90,
+      "aus": [
+        "s-ich-wir"
+      ],
+      "notiz": "Dritte Person ist hier gewollt, die Ich-Pruefung kann der Text nicht bestehen. Die eigene Sicht muss trotzdem irgendwo stehen \u2014 als Einwand, Abgrenzung oder Bedingung. Das prueft kein Regex, das pruefst du."
+    },
+    "kurz": {
+      "titel": "Claim, Hero-Absatz, Social-Post, Betreffzeile, Produktkachel",
+      "min_woerter_stimme": 45,
+      "aus": [
+        "s-satzlaengen"
+      ],
+      "notiz": "Satzlaengen-Varianz braucht sechs Saetze, die hat ein Claim nie. Es bleibt das fehlende 'aber' und die fehlende Perspektive \u2014 beides auch auf 45 Woertern aussagekraeftig."
+    }
+  },
   "gruppen": {
     "vokabular": {
       "titel": "KI-Vokabular",
