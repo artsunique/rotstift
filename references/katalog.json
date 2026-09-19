@@ -358,6 +358,14 @@
           "muster": "\\*\\*[^*\\n]{1,40}\\*\\*[^\\n]{0,60}\\*\\*[^*\\n]{1,40}\\*\\*",
           "hinweis": "Mehrfachfettung in einem Absatz, typisches Chatbot-Layout.",
           "ersatz": "Hoechstens eine Fettung pro Absatz."
+        },
+        {
+          "id": "k-gedankenstrich-nachklapp",
+          "muster": "[–—]\\s*(nicht|kein)\\w*\\b",
+          "hinweis": "Tier 2: Korrigierender Nachklapp am Gedankenstrich. Bei Faktenkorrekturen legitim, als Stilfigur ein Tic.",
+          "ersatz": "Eigener Satz.",
+          "gewicht": 0.5,
+          "case": false
         }
       ],
       "metriken": [
@@ -405,6 +413,14 @@
           "muster": "\\b(f(ue|ü)hrend(e|er|es|en)?|Marktf(ue|ü)hrer|Nummer 1|beliebtest(e|er|es)|meistgenutzt(e|er|es))\\b",
           "hinweis": "Marktbehauptung. Unbelegt ist sie in DE zudem wettbewerbsrechtlich heikel.",
           "ersatz": "Beleg oder streichen."
+        },
+        {
+          "id": "b-gerundete-jahre",
+          "muster": "\\b(mehr als|(ue|ü)ber|rund|knapp|weit (ue|ü)ber)\\s+\\d{1,3}\\s+Jahren?\\b",
+          "hinweis": "Gerundete Erfahrungsangabe. Wer die Jahre hat, nennt das Jahr.",
+          "ersatz": "Gruendungsjahr statt Zeitspanne.",
+          "gewicht": 1.0,
+          "case": false
         }
       ]
     },
