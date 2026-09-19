@@ -72,6 +72,8 @@ FAENGT = [
     ("b-kundenzahl", "Über 10.000 zufriedene Kunden vertrauen uns."),
     ("b-erfahrung", "Seit über 20 Jahren Erfahrung im Dachdeckerhandwerk."),
     ("b-superlativ-markt", "Der führende Anbieter der Region."),
+    ("c-doppelpunkt-reveal", "## Conversion: So verdoppeln Sie Ihre Anfragen"),
+    ("c-doppelpunkt-reveal", "## Steuererklärung: Alles was Sie wissen müssen"),
 ]
 
 # ------------------------------------------------------- darf NICHT anschlagen
@@ -88,6 +90,14 @@ SAUBER = [
     "Sie erreichen uns montags bis freitags von 7 bis 17 Uhr.",
     "Innovativ ist hier nichts — der Aufbau ist seit vierzig Jahren derselbe.",
     "Die Reise nach Basel dauert vierzig Minuten.",
+    "## Persönlicher Eindruck: Ein Mutmacher für Kreative",
+    "## Haptik und Ästhetik: Papier, Bindung, Format",
+    # Aus einem Korpuslauf über 12 deutsche Fachartikel: das waren
+    # Fehlalarme, jeder einzelne korrektes Deutsch.
+    "Das ist die entscheidende Frage, und sie bleibt offen.",
+    "Im Usenet – dem Diskussionsnetz vor dem Web – galten eigene Regeln.",
+    "Peter Steiners Cartoon vom Juli 1993 – der mit dem Hund – ist heute Folklore.",
+    "Der entscheidende Unterschied liegt beim Papier.",
 ]
 
 # Gegenprobe: ein ganzer Slop-Absatz muss deutlich durchfallen.
@@ -128,6 +138,13 @@ verbaut haben werden. Ruf einfach an.
 """
 
 
+# Gepaarte Einschuebe sind korrektes Deutsch. Auffaellig ist erst die Haeufung,
+# und die faengt die Dichte-Metrik, nicht eine Regel pro Satz.
+STRICHDICHTE = (
+    "Im Usenet – dem Netz vor dem Web – galt das. " * 30
+)
+
+
 def main() -> int:
     fehler: list[str] = []
 
@@ -142,6 +159,11 @@ def main() -> int:
         for ergebnis in pruefe(satz, KATALOG):
             if not ergebnis.bestanden:
                 fehler.append(f"FEHLALARM Gruppe {ergebnis.titel} faellt bei: {satz!r}")
+
+    if "c-strich-dichte" not in treffer_ids(STRICHDICHTE):
+        fehler.append("BLIND   Strichdichte-Metrik greift bei 30 Einschueben nicht")
+    if "c-strich-dichte" in treffer_ids(MENSCH_ABSATZ):
+        fehler.append("FEHLALARM Strichdichte greift bei normalem Text")
 
     slop_score, _ = punktzahl(pruefe(SLOP_ABSATZ, KATALOG))
     if slop_score > 2:

@@ -122,8 +122,8 @@
         },
         {
           "id": "v-t2-massgeblich",
-          "muster": "\\b(ma(ss|ß)geblich|entscheidend|essenziell|unverzichtbar)(e|er|es|en|em)?\\b",
-          "hinweis": "Tier 2: Bedeutungs-Inflation.",
+          "muster": "\\b(ma(ss|ß)geblich|essenziell|unverzichtbar)(e|er|es|en|em)?\\b",
+          "hinweis": "Tier 2: Bedeutungs-Inflation. ('entscheidend' bewusst nicht hier - die Floskel-Verwendungen fangen k-rolle-spielen und k-entscheidender-bedeutung.)",
           "ersatz": "Wenn es stimmt, belegen. Sonst streichen.",
           "gewicht": 0.5
         },
@@ -312,12 +312,6 @@
       "erklaerung": "Formale Auffaelligkeiten, die unabhaengig vom Wortschatz verraten.",
       "regeln": [
         {
-          "id": "c-gedankenstrich",
-          "muster": "[^.!?]*[–—][^.!?]*[–—][^.!?]*[.!?]",
-          "hinweis": "Zwei Gedankenstriche in einem Satz. Im Deutschen selten, in KI-Text Standard.",
-          "ersatz": "Komma, Klammer oder Punkt."
-        },
-        {
           "id": "c-bullet-gedankenstrich",
           "muster": "(?m)^\\s*[–—]\\s+\\S",
           "hinweis": "Gedankenstrich als Listenzeichen. Deutsche Listen nutzen den Bindestrich.",
@@ -332,9 +326,10 @@
         },
         {
           "id": "c-doppelpunkt-reveal",
-          "muster": "(?m)^#{1,6}\\s+[^:\\n]{5,40}:\\s+\\S",
-          "hinweis": "Headline im Muster 'Thema: Versprechen'.",
-          "ersatz": "Eine Aussage ohne Doppelpunkt."
+          "muster": "(?m)^#{1,6}\\s+[^:\\n]{4,45}:\\s+(So\\b|Alles,? was\\b|Mehr\\b|Endlich\\b|Jetzt\\b|Der (Schl(ue|ü)ssel|Weg) zu\\b|[^\\n]{3,40}leicht gemacht)",
+          "hinweis": "Headline im Muster 'Thema: Werbeversprechen'. Eine sachliche Praezisierung nach dem Doppelpunkt ist dagegen normales Deutsch.",
+          "ersatz": "Eine Aussage ohne Doppelpunkt.",
+          "gewicht": 0.5
         },
         {
           "id": "c-emoji",
@@ -347,6 +342,16 @@
           "muster": "\\*\\*[^*\\n]{1,40}\\*\\*[^\\n]{0,60}\\*\\*[^*\\n]{1,40}\\*\\*",
           "hinweis": "Mehrfachfettung in einem Absatz, typisches Chatbot-Layout.",
           "ersatz": "Hoechstens eine Fettung pro Absatz."
+        }
+      ],
+      "metriken": [
+        {
+          "id": "c-strich-dichte",
+          "typ": "gedankenstrich_dichte",
+          "schwelle_je_1000": 25,
+          "gewicht": 0.5,
+          "hinweis": "Sehr hohe Gedankenstrich-Dichte. Gepaarte Einschuebe sind korrektes Deutsch, Haeufung ermuedet.",
+          "ersatz": "Einige Einschuebe in Kommas oder eigene Saetze aufloesen."
         }
       ]
     },

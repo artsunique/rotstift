@@ -142,11 +142,21 @@ def woerter(text: str) -> list[str]:
 # ---------------------------------------------------------------- Metriken
 
 
-def pruefe_metriken(text: str, metriken: list[dict]) -> list[Treffer]:
+def pruefe_metriken(text: str, metriken: list[dict], gruppe: str = "stimme") -> list[Treffer]:
     treffer: list[Treffer] = []
     alle_woerter = woerter(text)
     if len(alle_woerter) < MIN_WOERTER_STIMME:
         return treffer
+
+    for metrik in metriken:
+        if metrik.get("typ") != "gedankenstrich_dichte":
+            continue
+        striche = len(re.findall(r"[\u2013\u2014]", text))
+        je_1000 = 1000 * striche / len(alle_woerter)
+        if je_1000 >= metrik.get("schwelle_je_1000", 25):
+            treffer.append(Treffer(gruppe, metrik["id"],
+                f"{striche} Gedankenstriche, {je_1000:.0f} je 1000 Woerter", 1,
+                metrik["hinweis"], metrik["ersatz"], float(metrik.get("gewicht", 1.0))))
 
     satzliste = saetze(text)
     klein = text.lower()
@@ -241,7 +251,8 @@ def pruefe(text: str, katalog: dict, belege_ok: bool = False) -> list[Gruppenerg
                 )
 
         if gruppe.get("metriken"):
-            ergebnis.treffer.extend(pruefe_metriken(text, gruppe["metriken"]))
+            ergebnis.treffer.extend(
+                pruefe_metriken(text, gruppe["metriken"], schluessel))
 
         if schluessel == "belege" and belege_ok:
             ergebnis.uebersprungen = True
