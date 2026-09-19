@@ -91,18 +91,120 @@ Je ein Punkt. Voller Katalog mit Fundstellen und Ersatzvorschlägen:
    hier. Sie misst nicht, was dasteht, sondern was fehlt: kein einziges „aber",
    zu gleichförmige Satzlängen, keine erste Person. Greift ab 120 Wörtern.
 
+## Textsorten
+
+Gruppe 6 braucht Text, um etwas messen zu können. Unterhalb der Schwelle wurde
+sie bisher still als bestanden verbucht — eine Über-mich-Seite mit 75 Wörtern
+bekam 6/6, ohne dass je jemand nach dem fehlenden „aber" gesehen hätte. Genau
+die Textsorten, die Kunden zuerst prüfen lassen, waren die ungeprüften.
+
+`--textsorte` verschiebt die Schwelle und schaltet einzelne Metriken ab:
+
+```
+python3 tools/deslop_de.py --textsorten          # zeigt, was der Katalog kennt
+
+python3 tools/deslop_de.py ueber-mich.md --textsorte profil
+python3 tools/deslop_de.py claim.txt   --textsorte kurz
+```
+
+| Sorte      | Stimme ab | abgeschaltet    | wofür                                           |
+| ---------- | --------- | --------------- | ----------------------------------------------- |
+| `standard` | 120 W     | —               | Landingpage, Blogpost, Newsletter, Angebot      |
+| `profil`   | 90 W      | `s-ich-wir`     | Über-mich-Seite, Unternehmensprofil, Pressetext |
+| `kurz`     | 45 W      | `s-satzlaengen` | Claim, Hero, Social-Post, Betreffzeile          |
+
+`profil` nimmt die Ich-Prüfung raus, weil ein Text in der dritten Person sie
+nicht bestehen kann und sonst dauerhaft bei 5/6 deckelt. Die eigene Sicht muss
+trotzdem irgendwo stehen — als Einwand, Abgrenzung oder Bedingung. Das prüft
+kein Regex.
+
+Was nicht geprüft werden konnte, steht jetzt in der Ausgabe:
+
+```
+[ uebersprungen ] Menschliche Signale (Umkehrpruefung)
+       Metriken nicht geprueft, 75 < 120 Woerter
+
+Score 6/6 · 1 ungeprueft (stimme)
+```
+
+Eigene Sorten kommen wie eigene Regeln in `references/katalog.json`, unter
+`textsorten`. Ein Tippfehler im Namen bricht ab, statt stillschweigend auf
+`standard` zurückzufallen — sonst prüft man monatelang das Falsche.
+
 ## Als Skill einbinden
 
-**Claude (Web):** Ordner als ZIP herunterladen, in claude.ai unter *Anpassen →
-Skills → Skill hochladen* einspielen. Dann: „Nutze slopwächter auf diesen Text".
+### Claude Code
 
-**Claude Code:** `git clone … ~/.claude/skills/slopwaechter`, dann
-`/slopwaechter`. Hier kann Claude den Linter selbst ausführen und so lange
-iterieren, bis 6/6 steht — der eigentliche Gewinn.
+Der kürzeste Weg, weil kein Upload nötig ist:
 
-**ChatGPT / Codex:** `SKILL.md` und `references/katalog.json` als Wissensdateien
-in einen Custom GPT, oder den Agenten auf `SKILL.md` zeigen lassen. Der Skill
-enthält nichts Claude-Spezifisches.
+```bash
+git clone https://github.com/artsunique/slopwaechter ~/.claude/skills/slopwaechter
+```
+
+Neue Sitzung starten, dann `/slopwaechter` oder einfach „slopwächter über die
+Landingpage". Für ein Projekt statt für alle: nach `.claude/skills/` im Repo
+klonen, dann liegt der Skill im Git-Verlauf des Projekts und alle im Team haben
+ihn.
+
+### claude.ai und Claude Desktop
+
+Voraussetzung ist ein Plan mit Codeausführung (Pro, Max, Team, Enterprise).
+Erst *Einstellungen → Funktionen → Codeausführung und Dateierstellung*
+einschalten — ohne das bleibt das Skills-Menü ausgegraut, und zwar unabhängig
+vom Plan. Bei Team und Enterprise kann nur ein Owner den Schalter umlegen.
+
+Dann ZIP bauen:
+
+```bash
+cd slopwaechter
+zip -r ../slopwaechter.zip . -x '.git/*' '.DS_Store' '**/__pycache__/*'
+```
+
+Hochladen unter *Anpassen → Skills → +*. Wird das ZIP abgewiesen, liegt es fast
+immer daran, dass `SKILL.md` nicht dort liegt, wo Claude sie sucht: sie gehört
+auf die oberste Ebene des Archivs. Der Finder packt beim Rechtsklick den
+Ordner *mit* ein und schiebt damit alles eine Ebene tiefer — deshalb der
+Befehl oben mit `cd` und `.` statt `zip -r slopwaechter.zip slopwaechter`.
+
+Anschließend im Chat: „Nutze slopwächter auf diesen Text". Weil Skills hier
+ohnehin Codeausführung voraussetzen, läuft `deslop_de.py` in der Sandbox
+wirklich — Claude rät den Score nicht, sondern misst ihn und kann iterieren,
+bis 6/6 steht. Was dort nicht geht, ist `tools/cleanse.sh`: die Sandbox hat
+keine zweite KI-CLI. Das Gegenlesen machst du von Hand, indem du den Entwurf
+in einen Chat einer anderen Modellfamilie gibst und danach **erneut lintest**.
+
+Ein Update ist kein Update, sondern ein zweiter Upload derselben Datei — die
+alte Fassung vorher löschen, sonst hast du zwei.
+
+### ChatGPT
+
+Ein Skills-System wie bei Claude gibt es dort nicht. Zwei Wege, die
+funktionieren:
+
+**Custom GPT.** `SKILL.md` und `references/katalog.json` als Wissensdateien
+hochladen, `tools/deslop_de.py` dazu. In die Instructions einen Satz, der den
+Ablauf auslöst: „Bei deutschen Texten den Ablauf aus SKILL.md befolgen, den
+Linter mit Code Interpreter ausführen, Score und Fundstellen ausgeben."
+Code Interpreter muss aktiv sein, sonst wird nur geraten.
+
+**Einzelner Chat.** Die drei Dateien in den Chat ziehen und schreiben: „Führe
+deslop_de.py auf dem Text unten aus und halte dich an SKILL.md." Ohne Upload
+geht es auch, dann arbeitet das Modell den Katalog von Hand ab — es findet
+dann weniger und schätzt den Score. Der Abschnitt *Ohne Terminal* in
+`SKILL.md` beschreibt genau diesen Fall.
+
+### Codex und andere Agenten
+
+Den Agenten auf `SKILL.md` im Repo zeigen lassen, oder den Pfad in `AGENTS.md`
+aufnehmen. `SKILL.md` und der Katalog enthalten nichts Claude-Spezifisches;
+der Linter braucht nur `python3` aus der Standardbibliothek.
+
+### Was du unabhängig vom Weg merken solltest
+
+Der Skill läuft **nur auf ausdrückliche Bitte**. Er lintet nichts, was das
+Modell gerade selbst geschrieben hat, und hängt keine Score-Zeile unter normale
+Antworten. Das ist Absicht: ein Linter, der sich ungefragt einmischt, wird
+abgeschaltet.
 
 ## Eigene Regeln
 

@@ -145,6 +145,75 @@ STRICHDICHTE = (
 )
 
 
+# ------------------------------------------------------- Textsorten
+
+# Ueber 45, unter 90 Woertern: dritte Person, kein "aber". Unter "standard"
+# kommt die Stimme-Gruppe gar nicht erst zum Zug — genau der blinde Fleck,
+# den die Textsorten schliessen. Unter "kurz" greift sie.
+KURZER_PROFILTEXT = """
+Andreas Burget ist Grafikdesigner mit Schwerpunkt auf Marken- und
+Interaktionsdesign. Seit 2011 entwickelt er von Weil am Rhein aus visuelle
+und digitale Systeme für mittelständische Unternehmen und spezialisierte
+Organisationen. Er begleitet Projekte von der Analyse bis zur Umsetzung und
+arbeitet dabei direkt mit der Geschäftsführung zusammen. Die Zusammenarbeit
+beginnt in der Regel mit einer Bestandsaufnahme der vorhandenen Unterlagen
+und endet mit der Übergabe der fertigen Dateien an die Druckerei oder an die
+Entwicklung.
+"""
+
+
+def gruppe(ergebnisse, schluessel):
+    for ergebnis in ergebnisse:
+        if ergebnis.schluessel == schluessel:
+            return ergebnis
+    raise AssertionError(f"Gruppe {schluessel} fehlt im Katalog")
+
+
+def pruefe_textsorten(fehler: list[str]) -> None:
+    sorten = KATALOG.get("textsorten", {})
+    for pflicht in ("standard", "profil", "kurz"):
+        if pflicht not in sorten:
+            fehler.append(f"FEHLT   Textsorte '{pflicht}' nicht im Katalog")
+    if not sorten:
+        return
+
+    # Kurztext unter "standard": Stimme wird nicht geprueft und sagt das auch.
+    stimme = gruppe(pruefe(KURZER_PROFILTEXT, KATALOG), "stimme")
+    if not stimme.uebersprungen:
+        fehler.append("STILL   Stimme-Gruppe bei Kurztext nicht als ungeprueft markiert")
+    if "Woerter" not in stimme.notiz:
+        fehler.append(f"STUMM   Kurztext ohne Begruendung in der Notiz: {stimme.notiz!r}")
+
+    # Unter "kurz" greift sie und findet die fehlende Perspektive.
+    stimme_kurz = gruppe(pruefe(KURZER_PROFILTEXT, KATALOG, textsorte="kurz"), "stimme")
+    if stimme_kurz.uebersprungen:
+        fehler.append("BLIND   Textsorte 'kurz' prueft die Stimme-Gruppe immer noch nicht")
+    if "s-ich-wir" not in {t.regel_id for t in stimme_kurz.treffer}:
+        fehler.append("BLIND   'kurz' findet die fehlende erste Person nicht")
+
+    # Unter "profil" ist genau diese Metrik abgeschaltet, der Rest laeuft.
+    stimme_profil = gruppe(pruefe(MENSCH_ABSATZ, KATALOG, textsorte="profil"), "stimme")
+    if "s-ich-wir" in {t.regel_id for t in stimme_profil.treffer}:
+        fehler.append("FEHLALARM 'profil' schaltet s-ich-wir nicht ab")
+    if "s-ich-wir" not in stimme_profil.notiz:
+        fehler.append("STUMM   'profil' verschweigt, dass s-ich-wir abgeschaltet ist")
+
+    # Keine Textsorte darf den Menschentext schlechter machen.
+    for name in sorten:
+        score, gesamt = punktzahl(pruefe(MENSCH_ABSATZ, KATALOG, textsorte=name))
+        if score < gesamt:
+            fehler.append(f"ZU STRENG Menschentext faellt unter Textsorte '{name}': {score}/{gesamt}")
+
+    # Tippfehler in der Textsorte muessen knallen, nicht stillschweigend
+    # auf Standard zurueckfallen.
+    try:
+        pruefe(MENSCH_ABSATZ, KATALOG, textsorte="gibtsnicht")
+    except KeyError:
+        pass
+    else:
+        fehler.append("STILL   Unbekannte Textsorte laeuft kommentarlos durch")
+
+
 def main() -> int:
     fehler: list[str] = []
 
@@ -179,6 +248,8 @@ def main() -> int:
         ]
         fehler.append(f"ZU STRENG Menschentext erreicht {mensch_score}/{gesamt}: {offen}")
 
+    pruefe_textsorten(fehler)
+
     if fehler:
         print(f"\n  {len(fehler)} Problem(e):\n")
         for eintrag in fehler:
@@ -187,7 +258,8 @@ def main() -> int:
         return 1
 
     geprueft = len(FAENGT) + len(SAUBER) + 2
-    print(f"\n  alles gruen — {geprueft} Faelle, {len(KATALOG['gruppen'])} Gruppen\n")
+    print(f"\n  alles gruen — {geprueft} Faelle, {len(KATALOG['gruppen'])} Gruppen, "
+          f"{len(KATALOG.get('textsorten', {}))} Textsorten\n")
     return 0
 
 

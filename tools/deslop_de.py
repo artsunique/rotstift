@@ -9,6 +9,7 @@ und das Modell ueberzeugend.
     python3 tools/deslop_de.py --text "Nicht nur schnell, sondern auch nahtlos."
     python3 tools/deslop_de.py texte/landingpage.md
     python3 tools/deslop_de.py index.html --belege-ok
+    python3 tools/deslop_de.py ueber-mich.md --textsorte profil
     python3 tools/deslop_de.py entwurf.md --json
 
 Exit 0 ab der Mindestpunktzahl (Default 6/6), sonst 1.
@@ -31,8 +32,10 @@ KATALOG_DEFAULT = os.path.join(
     "katalog.json",
 )
 
+# Default der Textsorte "standard". Jede Textsorte im Katalog darf ihn senken.
 MIN_WOERTER_STIMME = 120
 MAX_TREFFER_PRO_REGEL = 8
+TEXTSORTE_DEFAULT = "standard"
 
 FARBEN = {
     "rot": "\033[31m",
@@ -110,6 +113,7 @@ class Gruppenergebnis:
     schwelle: int
     treffer: list[Treffer] = field(default_factory=list)
     uebersprungen: bool = False
+    notiz: str = ""
 
     @property
     def last(self) -> float:
@@ -142,10 +146,15 @@ def woerter(text: str) -> list[str]:
 # ---------------------------------------------------------------- Metriken
 
 
-def pruefe_metriken(text: str, metriken: list[dict], gruppe: str = "stimme") -> list[Treffer]:
+def pruefe_metriken(
+    text: str,
+    metriken: list[dict],
+    gruppe: str = "stimme",
+    min_woerter: int = MIN_WOERTER_STIMME,
+) -> list[Treffer]:
     treffer: list[Treffer] = []
     alle_woerter = woerter(text)
-    if len(alle_woerter) < MIN_WOERTER_STIMME:
+    if len(alle_woerter) < min_woerter:
         return treffer
 
     for metrik in metriken:
@@ -217,8 +226,29 @@ def pruefe_metriken(text: str, metriken: list[dict], gruppe: str = "stimme") -> 
 # ---------------------------------------------------------------- Kern
 
 
-def pruefe(text: str, katalog: dict, belege_ok: bool = False) -> list[Gruppenergebnis]:
+def lade_textsorte(katalog: dict, name: str) -> dict:
+    """Profil einer Textsorte holen. Unbekannter Name ist ein Fehler, keine
+    stille Ruecknahme auf Standard — sonst prueft man monatelang das Falsche."""
+    sorten = katalog.get("textsorten", {})
+    if name == TEXTSORTE_DEFAULT and name not in sorten:
+        return {}
+    if name not in sorten:
+        bekannt = ", ".join(sorten) or "keine im Katalog hinterlegt"
+        raise KeyError(f"Unbekannte Textsorte '{name}'. Bekannt: {bekannt}")
+    return sorten[name]
+
+
+def pruefe(
+    text: str,
+    katalog: dict,
+    belege_ok: bool = False,
+    textsorte: str = TEXTSORTE_DEFAULT,
+) -> list[Gruppenergebnis]:
     ergebnisse: list[Gruppenergebnis] = []
+    profil = lade_textsorte(katalog, textsorte)
+    min_woerter = int(profil.get("min_woerter_stimme", MIN_WOERTER_STIMME))
+    abgeschaltet = set(profil.get("aus", []))
+    wortzahl = len(woerter(text))
 
     for schluessel, gruppe in katalog["gruppen"].items():
         ergebnis = Gruppenergebnis(
@@ -228,6 +258,8 @@ def pruefe(text: str, katalog: dict, belege_ok: bool = False) -> list[Gruppenerg
         )
 
         for regel in gruppe.get("regeln", []):
+            if regel["id"] in abgeschaltet:
+                continue
             flags = re.UNICODE if regel.get("case") else re.IGNORECASE | re.UNICODE
             muster = re.compile(regel["muster"], flags)
             gewicht = float(regel.get("gewicht", 1.0))
@@ -251,11 +283,29 @@ def pruefe(text: str, katalog: dict, belege_ok: bool = False) -> list[Gruppenerg
                 )
 
         if gruppe.get("metriken"):
-            ergebnis.treffer.extend(
-                pruefe_metriken(text, gruppe["metriken"], schluessel))
+            aktiv = [m for m in gruppe["metriken"] if m["id"] not in abgeschaltet]
+            stumm = [m["id"] for m in gruppe["metriken"] if m["id"] in abgeschaltet]
+            vermerke: list[str] = []
+
+            if wortzahl < min_woerter:
+                vermerke.append(
+                    f"Metriken nicht geprueft, {wortzahl} < {min_woerter} Woerter")
+                # Eine Gruppe ohne Regeln haette hier gar nichts geprueft.
+                # Die darf nicht als bestanden durchgehen.
+                if not gruppe.get("regeln"):
+                    ergebnis.uebersprungen = True
+            else:
+                ergebnis.treffer.extend(
+                    pruefe_metriken(text, aktiv, schluessel, min_woerter))
+
+            if stumm:
+                vermerke.append(
+                    f"abgeschaltet durch --textsorte {textsorte}: {', '.join(stumm)}")
+            ergebnis.notiz = " · ".join(vermerke)
 
         if schluessel == "belege" and belege_ok:
             ergebnis.uebersprungen = True
+            ergebnis.notiz = "--belege-ok gesetzt, Zahlen gelten als belegt"
 
         ergebnisse.append(ergebnis)
 
@@ -279,6 +329,8 @@ def bericht(ergebnisse: list[Gruppenergebnis], farbig: bool, ausfuehrlich: bool)
             zeilen.append(faerbe(kopf, "grau", farbig))
         elif ergebnis.bestanden and not ergebnis.treffer:
             zeilen.append(faerbe(f"  [ ok ] {ergebnis.titel}", "gruen", farbig))
+            if ergebnis.notiz:
+                zeilen.append(faerbe(f"         {ergebnis.notiz}", "grau", farbig))
             continue
         elif ergebnis.bestanden:
             kopf = (f"  [ ok ] {ergebnis.titel} — {len(ergebnis.treffer)} Hinweis(e), "
@@ -288,6 +340,9 @@ def bericht(ergebnisse: list[Gruppenergebnis], farbig: bool, ausfuehrlich: bool)
             kopf = (f"  [ -1 ] {ergebnis.titel} — {len(ergebnis.treffer)} Treffer, "
                     f"Last {ergebnis.last:g} (Schwelle {ergebnis.schwelle})")
             zeilen.append(faerbe(kopf, "rot", farbig))
+
+        if ergebnis.notiz:
+            zeilen.append(faerbe(f"         {ergebnis.notiz}", "grau", farbig))
 
         zeige = ergebnis.treffer if ausfuehrlich else ergebnis.treffer[:6]
         for treffer in zeige:
@@ -299,24 +354,31 @@ def bericht(ergebnisse: list[Gruppenergebnis], farbig: bool, ausfuehrlich: bool)
             zeilen.append(faerbe(f"         … {rest} weitere (--alles zeigt sie)", "grau", farbig))
 
     farbe = "gruen" if erreicht == gesamt else ("gelb" if erreicht >= gesamt - 1 else "rot")
+    geschenkt = [e.schluessel for e in ergebnisse if e.uebersprungen]
+    zusatz = f" · {len(geschenkt)} ungeprueft ({', '.join(geschenkt)})" if geschenkt else ""
     zeilen.append("")
-    zeilen.append(faerbe(f"  Score {erreicht}/{gesamt}", farbe, farbig))
+    zeilen.append(faerbe(f"  Score {erreicht}/{gesamt}", farbe, farbig)
+                  + faerbe(zusatz, "gelb", farbig))
     return "\n".join(zeilen)
 
 
-def als_json(ergebnisse: list[Gruppenergebnis]) -> str:
+def als_json(ergebnisse: list[Gruppenergebnis],
+             textsorte: str = TEXTSORTE_DEFAULT) -> str:
     erreicht, gesamt = punktzahl(ergebnisse)
     return json.dumps(
         {
             "score": erreicht,
             "max": gesamt,
             "bestanden": erreicht == gesamt,
+            "textsorte": textsorte,
+            "ungeprueft": [e.schluessel for e in ergebnisse if e.uebersprungen],
             "gruppen": [
                 {
                     "schluessel": e.schluessel,
                     "titel": e.titel,
                     "bestanden": e.bestanden,
                     "uebersprungen": e.uebersprungen,
+                    "notiz": e.notiz,
                     "schwelle": e.schwelle,
                     "last": e.last,
                     "treffer": [
@@ -352,11 +414,38 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--katalog", default=KATALOG_DEFAULT, help="eigener Regelkatalog (JSON)")
     parser.add_argument("--belege-ok", action="store_true",
                         help="Zahlen sind belegbar: Gruppe blockiert nicht, Fundstellen erscheinen trotzdem")
+    parser.add_argument("--textsorte", default=TEXTSORTE_DEFAULT,
+                        help="Textsorte aus dem Katalog (Default: standard). --textsorten listet sie auf")
+    parser.add_argument("--textsorten", action="store_true",
+                        help="Verfuegbare Textsorten anzeigen und beenden")
     parser.add_argument("--min", type=int, default=None, help="Mindestpunktzahl fuer Exit 0 (Default: alle)")
     parser.add_argument("--json", action="store_true", help="Maschinenlesbare Ausgabe")
     parser.add_argument("--alles", action="store_true", help="Alle Treffer statt der ersten sechs")
     parser.add_argument("--keine-farben", action="store_true")
     args = parser.parse_args(argv)
+
+    try:
+        with open(args.katalog, "r", encoding="utf-8") as fh:
+            katalog = json.load(fh)
+    except (OSError, json.JSONDecodeError) as fehler:
+        print(f"Katalog nicht lesbar ({args.katalog}): {fehler}", file=sys.stderr)
+        return 2
+
+    if args.textsorten:
+        sorten = katalog.get("textsorten", {})
+        if not sorten:
+            print("Dieser Katalog kennt keine Textsorten.", file=sys.stderr)
+            return 2
+        print()
+        for name, profil in sorten.items():
+            marke = " (Default)" if name == TEXTSORTE_DEFAULT else ""
+            print(f"  {name}{marke} — {profil.get('titel', '')}")
+            print(f"      Stimme ab {profil.get('min_woerter_stimme', MIN_WOERTER_STIMME)} Woertern"
+                  + (f", aus: {', '.join(profil['aus'])}" if profil.get("aus") else ""))
+            if profil.get("notiz"):
+                print(f"      {profil['notiz']}")
+        print()
+        return 0
 
     if args.text is not None:
         text = args.text
@@ -379,22 +468,23 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        with open(args.katalog, "r", encoding="utf-8") as fh:
-            katalog = json.load(fh)
-    except (OSError, json.JSONDecodeError) as fehler:
-        print(f"Katalog nicht lesbar ({args.katalog}): {fehler}", file=sys.stderr)
+        ergebnisse = pruefe(text, katalog, belege_ok=args.belege_ok,
+                            textsorte=args.textsorte)
+    except KeyError as fehler:
+        print(str(fehler).strip('"'), file=sys.stderr)
         return 2
 
-    ergebnisse = pruefe(text, katalog, belege_ok=args.belege_ok)
     erreicht, gesamt = punktzahl(ergebnisse)
     schwelle = args.min if args.min is not None else gesamt
 
     if args.json:
-        print(als_json(ergebnisse))
+        print(als_json(ergebnisse, args.textsorte))
     else:
         farbig = sys.stdout.isatty() and not args.keine_farben
         print()
-        print(faerbe(f"  slopwaechter · {quelle} · {len(woerter(text))} Woerter", "fett", farbig))
+        print(faerbe(
+            f"  slopwaechter · {quelle} · {len(woerter(text))} Woerter"
+            f" · Textsorte {args.textsorte}", "fett", farbig))
         print()
         print(bericht(ergebnisse, farbig, args.alles))
         print()

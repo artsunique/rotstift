@@ -30,6 +30,28 @@ Lies die Ausgabe vollständig, bevor du irgendetwas änderst. Jede Fundstelle
 kommt mit Begründung und Ersatzvorschlag. Die Gruppe **Menschliche Signale**
 ist die wichtigste und die einzige, die misst, was *fehlt*.
 
+Sag dem Linter vorher, was für ein Text das ist. Ohne Angabe prüft er gegen
+eine Schwelle von 120 Wörtern, und alles darunter bekommt die wichtigste
+Gruppe geschenkt:
+
+```bash
+python3 tools/deslop_de.py --textsorten            # zeigt, was der Katalog kennt
+python3 tools/deslop_de.py ueber-mich.md --textsorte profil
+python3 tools/deslop_de.py claim.txt   --textsorte kurz
+```
+
+`profil` (Über-mich, Unternehmensprofil, Pressetext) senkt die Schwelle auf 90
+und nimmt die Ich-Prüfung raus — ein Text in der dritten Person kann sie nicht
+bestehen und deckelt sonst dauerhaft bei 5/6. Die eigene Sicht muss trotzdem
+irgendwo stehen: ein Einwand, eine Abgrenzung, eine Bedingung. Das prüft kein
+Regex, das prüfst du.
+
+`kurz` (Claim, Hero, Social-Post, Betreffzeile) senkt auf 45 und lässt die
+Satzlängen-Varianz weg, die sechs Sätze bräuchte.
+
+Meldet der Linter `ungeprueft`, gehört das in deine Ausgabe. Ein geschenktes
+6/6 weiterzureichen ist Frisieren.
+
 ## Schritt 2 — Umschreiben, in drei getrennten Durchgängen
 
 Nicht alles auf einmal. Jeder Durchgang hat eine Aufgabe.
