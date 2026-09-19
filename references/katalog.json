@@ -133,6 +133,14 @@
           "hinweis": "Tier 2: in der Technik echt, im Marketing leer.",
           "ersatz": "Streichen.",
           "gewicht": 0.5
+        },
+        {
+          "id": "v-langjaehrig",
+          "muster": "\\blangj(ae|ä)hrig\\w*",
+          "hinweis": "Erfahrungsbehauptung ohne Zahl. Wer die Jahre hat, nennt sie.",
+          "ersatz": "Jahreszahl oder Zeitraum nennen, sonst streichen.",
+          "gewicht": 1.0,
+          "case": false
         }
       ]
     },
@@ -303,6 +311,14 @@
           "muster": "\\b(kann unter Umst(ae|ä)nden|k(oe|ö)nnte m(oe|ö)glicherweise|in der Regel meist|tendenziell eher)\\b",
           "hinweis": "Gestapelte Abschwaecher.",
           "ersatz": "Eine Einschraenkung reicht."
+        },
+        {
+          "id": "d-adjektiv-dreiklang",
+          "muster": "\\b\\w+(?:er|em|en)\\s+\\w{4,}(?:ung|heit|keit|nis|ion)\\b\\s*,\\s*\\w+(?:er|em|en)\\s+\\w{4,}(?:ung|heit|keit|nis|ion)\\b\\s+und\\b",
+          "hinweis": "Nominaler Dreiklang aus Adjektiv plus Substantiv. Sagt dreimal dasselbe.",
+          "ersatz": "Einen Punkt behalten und konkret machen, die anderen streichen.",
+          "gewicht": 1.0,
+          "case": false
         }
       ]
     },
