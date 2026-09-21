@@ -1,16 +1,39 @@
-# slopwächter
+# Rotstift
 
-**Deutsche Texte, die nicht nach Sprachmodell klingen.**
+**Stop the slop – auf Deutsch.** Ein Linter für Floskeln, Nominalstil und
+leere Behauptungen in deutschen Texten, egal ob sie aus einem Sprachmodell
+stammen oder aus der eigenen Feder.
 
 Linten, umschreiben, von einer fremden Modellfamilie gegenlesen lassen, erneut
-linten. Für Landingpages, Newsletter, Produkttexte, Stellenanzeigen — alles,
-was ein Mensch liest und beurteilt.
+linten. Für Landingpages, Newsletter, Produkttexte, Stellenanzeigen, also
+alles, was ein Mensch liest und beurteilt.
 
-Kein Port eines englischen Humanizers. Die lautesten Tells im Deutschen gibt
-es im Englischen gar nicht: Nominalstil, Genitivketten, Amtsdeutsch,
-aufzählende Absatzanfänge. Und der allerstärkste ist eine Abwesenheit — ein
-deutscher Text ohne ein einziges **aber**, der stattdessen auf „jedoch" und
-„allerdings" ausweicht, ist fast immer maschinell.
+Die lautesten Tells im Deutschen gibt es im Englischen gar nicht: Nominalstil,
+Genitivketten, Amtsdeutsch, aufzählende Absatzanfänge. Und der stärkste ist
+eine Abwesenheit. Ein deutscher Text ohne ein einziges **aber**, der
+stattdessen auf „jedoch" und „allerdings" ausweicht, klingt fast immer nach
+Maschine.
+
+## Wofür das gedacht ist
+
+Slop ist Text, in dem nichts steht. Den gab es lange vor den Sprachmodellen:
+Nominalstil, Amtsdeutsch und Genitivketten füllen seit Jahrzehnten
+Geschäftsberichte. Die Modelle haben diese Muster aus solchen Texten gelernt
+und setzen sie heute häufiger als jeder Mensch. Deshalb funktioniert der
+Linter bei eigenen Texten genauso. Er fragt nicht, wer geschrieben hat, sondern
+ob da etwas steht.
+
+Das Ziel ist ein besserer Text, kein unauffälligerer. Die meisten Korrekturen
+machen einen Text überprüfbarer: das Gründungsjahr statt „langjährige
+Erfahrung", eine gemessene Zahl statt „deutlich schneller". Erfundene Belege
+sind die einzige harte Regel. KI-Detektoren zu überlisten verspricht dieses
+Projekt ausdrücklich nicht. Detektoren sind Rauschen, das Ziel ist das
+Bauchgefühl eines menschlichen Lesers.
+
+Verhindern lässt sich trotzdem nicht, dass jemand damit einen KI-Text als
+eigenen ausgibt. Aber wo Offenlegung verlangt ist (in der Hausarbeit, in der
+Redaktion, bei einer gesetzlichen Kennzeichnungspflicht), ersetzt ein Score
+von 6/6 sie nicht.
 
 ## Die Schleife
 
@@ -27,7 +50,7 @@ Modell überzeugend.
 ## Schnellstart
 
 ```bash
-git clone https://github.com/artsunique/slopwaechter && cd slopwaechter
+git clone https://github.com/artsunique/rotstift && cd rotstift
 
 # einen Satz prüfen
 python3 tools/deslop_de.py --text "Nicht nur schnell, sondern auch nahtlos."
@@ -89,7 +112,8 @@ Je ein Punkt. Voller Katalog mit Fundstellen und Ersatzvorschlägen:
    wettbewerbsrechtlichem Risiko.
 6. **Menschliche Signale** — die Umkehrprüfung, und die eigentliche Neuerung
    hier. Sie misst nicht, was dasteht, sondern was fehlt: kein einziges „aber",
-   zu gleichförmige Satzlängen, keine erste Person. Greift ab 120 Wörtern.
+   zu gleichförmige Satzlängen, keine erste Person. Greift ab 120 Wörtern,
+   bei anderen Textsorten früher (siehe unten).
 
 ## Textsorten
 
@@ -138,10 +162,10 @@ Eigene Sorten kommen wie eigene Regeln in `references/katalog.json`, unter
 Der kürzeste Weg, weil kein Upload nötig ist:
 
 ```bash
-git clone https://github.com/artsunique/slopwaechter ~/.claude/skills/slopwaechter
+git clone https://github.com/artsunique/rotstift ~/.claude/skills/rotstift
 ```
 
-Neue Sitzung starten, dann `/slopwaechter` oder einfach „slopwächter über die
+Neue Sitzung starten, dann `/rotstift` oder einfach „Rotstift über die
 Landingpage". Für ein Projekt statt für alle: nach `.claude/skills/` im Repo
 klonen, dann liegt der Skill im Git-Verlauf des Projekts und alle im Team haben
 ihn.
@@ -156,17 +180,17 @@ vom Plan. Bei Team und Enterprise kann nur ein Owner den Schalter umlegen.
 Dann ZIP bauen:
 
 ```bash
-cd slopwaechter
-zip -r ../slopwaechter.zip . -x '.git/*' '.DS_Store' '**/__pycache__/*'
+cd rotstift
+zip -r ../rotstift.zip . -x '.git/*' '.DS_Store' '**/__pycache__/*'
 ```
 
 Hochladen unter *Anpassen → Skills → +*. Wird das ZIP abgewiesen, liegt es fast
 immer daran, dass `SKILL.md` nicht dort liegt, wo Claude sie sucht: sie gehört
 auf die oberste Ebene des Archivs. Der Finder packt beim Rechtsklick den
 Ordner *mit* ein und schiebt damit alles eine Ebene tiefer — deshalb der
-Befehl oben mit `cd` und `.` statt `zip -r slopwaechter.zip slopwaechter`.
+Befehl oben mit `cd` und `.` statt `zip -r rotstift.zip rotstift`.
 
-Anschließend im Chat: „Nutze slopwächter auf diesen Text". Weil Skills hier
+Anschließend im Chat: „Nutze Rotstift auf diesen Text". Weil Skills hier
 ohnehin Codeausführung voraussetzen, läuft `deslop_de.py` in der Sandbox
 wirklich — Claude rät den Score nicht, sondern misst ihn und kann iterieren,
 bis 6/6 steht. Was dort nicht geht, ist `tools/cleanse.sh`: die Sandbox hat
@@ -232,15 +256,12 @@ gar nichts mehr.
 Erfahrungsjahre, die niemand nachgezählt hat. Fehlt eine Zahl, schreib
 `[Zahl fehlt]` und mach weiter.
 
-Und dieses Projekt verspricht nicht, KI-Detektoren zu überlisten. Detektoren
-sind Rauschen. Das Ziel ist das Bauchgefühl eines menschlichen Lesers.
-
 ## Was 6/6 nicht heißt
 
 Es heißt „keine bekannten Muster", nicht „guter Text". Ein flacher, belangloser
-Text besteht mühelos. Der Linter ist ein Gitter, kein Lektorat. Wer nur gegen
-die Wortliste optimiert, schreibt in zwei Jahren den nächsten erkennbaren
-Einheitssound.
+Text besteht mühelos. Ein Rotstift streicht an, was auffällt. Ob der Text gut
+ist, weiß er nicht. Wer nur gegen die Wortliste optimiert, schreibt in zwei
+Jahren den nächsten erkennbaren Einheitssound.
 
 Bevor du es ausprobierst: Diese README fällt auf dem eigenen Linter durch, weil
 sie jeden Tell zitiert, den sie dokumentiert. Lass ihn über deine Texte laufen,
@@ -255,5 +276,10 @@ Musterkatalog und die „aber"-Beobachtung von
 [klartext](https://github.com/severinschweiger/klartext), das editierbare
 Regelformat von [ai-text-cleaner](https://pypi.org/project/ai-text-cleaner/).
 Alle drei MIT.
+
+Für englische Texte gibt es
+[stop-slop](https://github.com/hardikpandya/stop-slop) von Hardik Pandya, einen
+verbreiteten Skill mit ähnlichem Ziel. Rotstift ist kein Fork davon, sondern
+setzt dort an, wo englische Regeln im Deutschen nicht greifen.
 
 MIT. Wie das, worauf es steht.
